@@ -1,27 +1,29 @@
 /*
  *  Library class
- * 	- class that creates rental collection using ArrayList
- *  - contains addTransaction, getTotalLateFees, getTotalRentalCost
+ * 	- class that creates rental, item, and customer collection using HashMap with unique key
+ *  - contains addTransaction, addItem, addCustomer
+ *  - can getTotalLateFees and getTotalRentalCost
  */
 
 package library;
 
-import java.util.ArrayList;
+import java.util.*;
 
 public class Library {
 	
-	//Initialize Private Attribute
-	private ArrayList<Rental> rentalList = new ArrayList<Rental>();
+	//Initialize Private Attribute	
+	private HashMap<Integer,Rental> rentalCollection = new HashMap<Integer,Rental>();
+	private HashMap<Integer,Item> itemCollection = new HashMap<Integer,Item>();
+	private HashMap<Integer,Customer> customerCollection = new HashMap<Integer,Customer>();
 	
 	//Initialize Constructor with All Attributes 
-	protected Library(ArrayList<Rental> rental){
-		rental = new ArrayList<Rental>();
-		this.rentalList = rental;
+	protected Library(HashMap<Integer,Rental> rental){
+		this.rentalCollection = rental;
 	}
 	
 	//Copy constructor
 	protected Library(Library library){
-		this.rentalList = library.rentalList;
+		this.rentalCollection = library.getRental();
 	}
 	
 	//Clone
@@ -30,10 +32,20 @@ public class Library {
 		return new Library(this);
 	}
 	
-	//Add new transaction to rental collection
-	public void addTransaction(Item item, int rentalDays, int daysLate){
-		Rental rental = new Rental(item, rentalDays, daysLate);
-		rentalList.add(rental);
+	//functions to add rental, item, and customer 
+	public void addTransaction(Rental rental) throws DuplicateTransactionID{
+		if (rentalCollection.containsKey(rental.getTransactionID())) throw new DuplicateTransactionID(); 
+		rentalCollection.put(rental.getTransactionID(), rental);
+	}
+	
+	public void addItem(Item item) throws DuplicateItemID{
+		if (itemCollection.containsKey(item.getID())) throw new DuplicateItemID();
+		itemCollection.put(item.getID(), item);
+	}
+	
+	public void addCustomer(Customer customer) throws DuplicateCustomerID{
+		if (customerCollection.containsKey(customer.getID())) throw new DuplicateCustomerID();
+		customerCollection.put(customer.getID(), customer);
 	}
 	
 	//Calculate and return total late fees of all the rented items in the library
@@ -43,16 +55,16 @@ public class Library {
 		double total = 0;
 		
 		//check each item
-		for (Rental rental : rentalList){
+		for (Integer key : rentalCollection.keySet()){
 			
 			//check if item is device class, if it is, add device late fees to total
-			if (rental.getItem() instanceof Device){
-				total += (((Device) rental.getItem()).getLateFees(rental.getDaysLate()));		
+			if ((rentalCollection.get(key).getItem()) instanceof Device){
+				total += (((Device) rentalCollection.get(key).getItem()).getLateFees(rentalCollection.get(key).daysBetween(rentalCollection.get(key).getEstimatedReturn(), rentalCollection.get(key).getCurrentDate())));		
 			}
 			
 			//if not device class, it must be a book class, add book late fees to total
 			else {
-				total += (((Book) rental.getItem()).getLateFees(rental.getDaysLate()));
+				total += (((Book) rentalCollection.get(key).getItem()).getLateFees(rentalCollection.get(key).daysBetween(rentalCollection.get(key).getEstimatedReturn(), rentalCollection.get(key).getCurrentDate())));
 			}
 		}
 		
@@ -67,12 +79,12 @@ public class Library {
 		double total = 0;
 		
 		//check each item
-		for (Rental rental : rentalList){
+		for (Integer key : rentalCollection.keySet()){
 		
 			//check if item is device class, if not then check next item
-			if (rental.getItem() instanceof Device){
-				//sum the rental cost of device multiplied by number of days rented
-				total += ((Device) rental.getItem()).getRentalCost()*(double)rental.getRentalDays();
+			if ((rentalCollection.get(key).getItem())instanceof Device){
+				//sum the rental cost  device multiplied by number of days rented
+				total += ((Device) rentalCollection.get(key).getItem()).getRentalCost()*(double)rentalCollection.get(key).daysBetween(rentalCollection.get(key).getRentalDate(), rentalCollection.get(key).getCurrentDate());
 			}
 		}
 		
@@ -80,22 +92,40 @@ public class Library {
 		return total;
 	}
 	
-	//Getter
-	public ArrayList<Rental> getLibrary(){
-		return rentalList;
+	//Getter	
+	public HashMap<Integer, Rental> getRental(){
+		return rentalCollection;
 	}
 	
+	public HashMap<Integer, Item> getItem(){
+		return itemCollection;
+	}
+	
+	public HashMap<Integer, Customer> getCustomer(){
+		return customerCollection;
+	}
 	
 	//Setter
-	public void setLibrary(ArrayList<Rental> library){
-		library = new ArrayList<Rental>();
-		this.rentalList = library;
+	public void setRentalCol(HashMap<Integer,Rental> rental){
+		rental = new HashMap<Integer,Rental>();
+		this.rentalCollection = rental;
 	}
-
+	
+	public void setItemCol(HashMap<Integer,Item> item){
+		item = new HashMap<Integer, Item>();
+		this.itemCollection = item;
+	}
+	
+	public void setCustomerCol(HashMap<Integer,Customer> customer){
+		customer = new HashMap<Integer,Customer>();
+		this.customerCollection = customer;
+	}
+	
 	//toString
 	@Override
 	public String toString() {
-		return "Library System " + getLibrary() + "\n[Total Late Fees = $" + getTotalLateFees() + ", Total Rental Cost = $" + getTotalRentalCosts() + "]";
+		return "Library [rentalCollection=" + getRental() + ", itemCollection=" + getItem()
+				+ ", customerCollection=" + getCustomer() + "] \n[Total Late Fees = $" + getTotalLateFees() + ", Total Rental Cost = $" + getTotalRentalCosts() +"]";
 	}
 
 	//equals
@@ -108,10 +138,20 @@ public class Library {
 		if (getClass() != obj.getClass())
 			return false;
 		Library other = (Library) obj;
-		if (rentalList == null) {
-			if (other.rentalList != null)
+		if (customerCollection == null) {
+			if (other.customerCollection != null)
 				return false;
-		} else if (!rentalList.equals(other.rentalList))
+		} else if (!customerCollection.equals(other.customerCollection))
+			return false;
+		if (itemCollection == null) {
+			if (other.itemCollection != null)
+				return false;
+		} else if (!itemCollection.equals(other.itemCollection))
+			return false;
+		if (rentalCollection == null) {
+			if (other.rentalCollection != null)
+				return false;
+		} else if (!rentalCollection.equals(other.rentalCollection))
 			return false;
 		return true;
 	}

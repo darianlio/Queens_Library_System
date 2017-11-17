@@ -2,6 +2,7 @@
  * Device Class extends from the super class, Item
  * - this gets ID and Name from super
  * - contains extra attribute rentalCost
+ * - has another constructor with given ID
  */
 
 package library;
@@ -16,6 +17,12 @@ public class Device extends Item{
 	protected Device(String name, double rentalCost){
 		super(name);									//set ID and name in item class
 		this.rentalCost = rentalCost;					
+	}
+	
+	protected Device(String name, int id, double rentalCost) throws WrongRentalCost{
+		super(name, id);									//set ID and name in item class
+		if(rentalCost < 0) throw new WrongRentalCost();
+		else this.rentalCost = rentalCost;					
 	}	
 	
 	//Copy Constructor
@@ -41,7 +48,8 @@ public class Device extends Item{
 		this.rentalCost = rentalCost;
 	}
 	
-	//Get late fees for Device
+	//Get late fees for Device 2/days + 10%*rentalCost
+	@Override
 	public double getLateFees(int lateDays){
 		return (double)(2*lateDays) + 0.1 * rentalCost;
 	}

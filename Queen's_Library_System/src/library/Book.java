@@ -2,6 +2,7 @@
  * Book class that extends Item
  * - contains name, author, publisher, and year and super to Item
  * - also contains late fees (Book has no rental cost)
+ * - has another constructor with given ID
  */
 
 package library;
@@ -15,6 +16,14 @@ public class Book extends Item {
 	//Constructor with all attributes
 	public Book(String name, String authors, String publisher, int year){
 		super(name);
+		this.authors = authors;
+		this.publisher = publisher;
+		this.year = year;
+	}
+	
+	//Constructor with given ID
+	public Book(String name, int id, String authors, String publisher, int year){
+		super(name, id);
 		this.authors = authors;
 		this.publisher = publisher;
 		this.year = year;
@@ -64,6 +73,7 @@ public class Book extends Item {
 	}
 	
 	//Get late fees
+	@Override
 	public double getLateFees(int lateDays){
 		return (double)(0.5*lateDays);
 	}

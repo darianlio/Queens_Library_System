@@ -4,6 +4,7 @@
  * - has abstract clone method 
  * - this class has ID and Name
  * - did not include getLateFee in item since it doesn't have an implementation unless its a device or a book
+ * - has another constructor with given ID
 * 
 * IF NECESSARY
 * - make abstract getLateFee and override in all the other classes
@@ -25,6 +26,12 @@ public abstract class Item {
 	protected Item(String name){
 		this.itemID = ID++;
 		this.name = name;
+	}
+	
+	//Constructor with given ID
+	protected Item(String name, int id){
+		this.name = name;
+		this.itemID = id;
 	}
 		
 	//Create a copy constructor
@@ -50,17 +57,12 @@ public abstract class Item {
 			this.name = name;
 	}
 	
-	/* IF NECESSARY
-	 * - make abstract getLateFee and override in all the other classes
-	 * public abstract double getLateFee(int daysLate);
-	 */
-	
 	//toString
 	@Override
 	public String toString() {
 		return "Item [ID = " + getID() + ", name = " + getName() + "]";
 	}
-
+	
 	//equals
 	@Override
 	public boolean equals(Object obj) {
@@ -81,5 +83,6 @@ public abstract class Item {
 		return true;
 	}
 
-
+	//abstract get late fees
+	public abstract double getLateFees(int lateDays);
 }
